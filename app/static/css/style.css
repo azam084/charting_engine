@@ -1,0 +1,56 @@
+h2 {
+    width: 100%;
+}
+
+.title {
+    margin: 5px;
+    width: 100%;
+}
+
+.content {
+    margin: 5px;
+    width: 100%;
+    display: flex;
+    flex-direction: row;
+    flex-wrap: wrap;
+}
+
+.post {
+    flex: 20%;
+    padding: 10px;
+    margin: 5px;
+    background-color: #f3f3f3;
+    inline-size: 100%;
+}
+
+.title a {
+    color: #00a36f;
+    text-decoration: none;
+}
+
+nav a {
+    color: #d64161;
+    font-size: 3em;
+    margin-left: 50px;
+    text-decoration: none;
+}
+
+.charts_list{
+    width: 100%;
+    padding-top: 20px;
+    border-top: solid 1px #cccc;
+    margin-top: 5px;
+}
+.charts_form{
+    width: 100%;
+    padding-top: 20px;
+    margin-top: 5px;
+}
+.charts_form label{width: 160px; font-weight: bold;display: flex;vertical-align: top;}
+.charts_form input{width: 300px;}
+.charts_form textarea{width: 400px; height: 150px;} 
+.charts_form .row{min-height: 25px;display:flex;margin: 3px;}
+.charts_form .json_form{ min-height: 150px;}
+.charts_form .row:nth-of-type(4){background-color: aquamarine;margin-top: 5px;padding-top: 5px;}
+.charts_form .row:nth-of-type(5){background-color: burlywood;}
+.charts_form .row:nth-of-type(6){background-color: cornflowerblue;}

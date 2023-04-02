@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>{% block title %} {% endblock %} - Argaam Charts</title>
+    <link  rel="stylesheet" type="text/css" href="/static/css/style.css">
+    <script src="/static/js/site.js"></script>
+
+    <link rel="stylesheet" href="/static/css/jsoneditor.css"/>
+    <script src="/static/js/jquery.min.js"></script>
+    <script src="/static/js/jquery.jsoneditor.js"></script>
+
+</head>
+<body>
+    <nav>
+        <a href="#">Create</a>
+        <a href="#">List of Visual</a> 
+    </nav>
+    <hr>
+    <div class="content">
+        <form action="" method="POST">
+       <div class="charts_form">
+            <h2>Add / Update Charts</h2>
+            <div class="row">
+                <label>Chart ID</label>
+                <input type="text" id="chart_id" name="chart_id" readonly="true" value="{{modify.chart_id}}" placeholder="Chart ID">
+            </div>
+            
+            <div class="row">
+                <label>Chart Name</label>
+                <input type="text" id="chart_name" name="chart_name"  placeholder="Chart Name" value="{{modify.chart_name}}">
+            </div>
+            <div class="row">
+                <label>Chart URL</label>
+                <input type="text" id="chart_url_name" name="chart_url_name" value="{{modify.chart_url_name}}"  placeholder="Chart URL (Down Link)">
+            </div>
+            <div class="row">
+                <label>Chart Style</label>
+                <textarea  id="chart_styles" name="chart_styles" style="display: none;"  placeholder="Chart Style (JSON)">{{modify.chart_styles}}</textarea>
+                <div id="chart_styles_json" class="json-editor"></div>
+            </div>
+            <div class="row">
+                <label>Chart Config</label>
+                <textarea  id="chart_configs" name="chart_configs" style="display: none;"   placeholder="Chart Config (JSON)">{{modify.chart_configs}}</textarea>
+                <div id="chart_configs_json" class="json-editor"></div>
+            </div>
+            <div class="row">
+                <label>Chart Data Source</label>
+                <textarea  id="chart_data_source" name="chart_data_source" style="display: none;"  placeholder="Chart Data Source (JSON)">{{modify.chart_data_source}}</textarea>
+                <div id="chart_data_source_json" class="json-editor"></div>
+            </div>
+            <div class="row">
+                <input type="submit" title="Save / Update" value="Save / Update">
+                <input type="button" title="Cancel" value="Cancel">
+            </div>
+       </div>
+       </form>
+       <br />
+       <div class="charts_list">
+        <h2>Visuals List</h2>
+        <table>
+            <thead>
+            <tr>
+                <th>ID</th>
+                <th>Name</th>
+                <th>URL</th>
+                <!-- <th>Style</th>
+                <th>Config</th>
+                <th>Data Source</th> -->
+                <th>Option</th>
+
+            </tr>
+            </thead>
+            <tbody>
+                {% for config in data %}
+                  <tr>
+                    <td>{{ config.chart_id }}</td>
+                    <td>{{ config.chart_name }}</td>
+                    <td>{{ config.chart_url_name }}</td>
+                    <!-- <td>{{ config.chart_styles }}</td>
+                    <td>{{ config.chart_configs }}</td>
+                    <td>{{ config.chart_data_source }}</td> -->
+                    <td><a href="?modify={{ config.chart_id }}">Edit</a></td>
+                  </tr>
+                {% endfor %}
+              </tbody>
+        </table>
+       </div>
+    </div>
+    <script>
+        $(document).ready(function(){
+            var cs_json = JSON.parse($("#chart_styles").val());
+            var cc_json = JSON.parse($("#chart_configs").val());
+            var cds_json = JSON.parse($("#chart_data_source").val());
+            
+            var cs_opt = {  
+                change: function(data) { /* called on every change */
+                    console.log(data);
+                    $("#chart_styles").val(JSON.stringify(data));
+                },
+                propertyclick: function(path) { /* called when a property is clicked with the JS path to that property */ }
+            };
+            
+            var cds_opt = {  
+                change: function(data) { /* called on every change */ 
+                    $("#chart_data_source").val(JSON.stringify(data));
+                },
+                propertyclick: function(path) { /* called when a property is clicked with the JS path to that property */ }
+            };
+            var cc_opt = {  
+                change: function(data) { /* called on every change */ 
+                    $("#chart_configs").val(JSON.stringify(data));
+                },
+                propertyclick: function(path) { /* called when a property is clicked with the JS path to that property */ }
+            };
+            $('#chart_styles_json').jsonEditor(cs_json, cs_opt);
+            $('#chart_configs_json').jsonEditor(cc_json, cc_opt);
+            $('#chart_data_source_json').jsonEditor(cds_json, cds_opt);
+        });
+    </script>
+</body>
+</html>
