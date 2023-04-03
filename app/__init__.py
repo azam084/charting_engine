@@ -1,4 +1,4 @@
-from flask import Flask, render_template, request, redirect, url_for
+from flask import Flask, render_template, request, redirect, url_for, Response
 
 import pygal
 from pygal.style import Style
@@ -44,8 +44,19 @@ def create_app(config_class=Config):
         charttype = request.args.get('ct')
         
         token = app.config['DATA_API_TOKEN'] 
-        chart_pygal = visual.get_chart(request.args, token, charttype) 
-        response  = chart_pygal.render_response()
+
+        config_dict = json.loads(visual.chart_configs)
+        response = Response('', status=200, mimetype='text/plain')
+        use_plotly = config_dict.get('use_plotly')
+        if use_plotly is None:
+            chart_pygal = visual.get_chart(request.args, token, charttype) 
+            response  = chart_pygal.render_response()
+        else:
+            chart_plotly = visual.get_chart_plotly(request.args, token, charttype)
+            # response = Response(chart_plotly, mimetype='image/svg+xml') 
+            return render_template('plot.html', plot_div=chart_plotly)
+
+        
         accept_encoding = request.headers.get('Accept-Encoding', '')
         if 'gzip' not in accept_encoding:
             return response
@@ -96,4 +107,6 @@ def create_app(config_class=Config):
          
 
         return redirect(url_for('charts_management'))
+    
+    
     return app

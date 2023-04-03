@@ -6,6 +6,10 @@ from app.config import Config as config
 import pygal
 from pygal.style import Style
 
+import plotly
+import plotly.graph_objs as go
+import plotly.io as pio
+
 class Visual:
     @classmethod
     def from_dict(cls, data_dict):
@@ -95,3 +99,22 @@ class Visual:
         # bar_chart.truncate_label = -1
         # bar_chart.show_minor_x_labels = False
         return bar_chart
+
+    def get_chart_plotly(self, args, token, charttype):
+        data  = self.get_data(args, token)
+        df = pd.DataFrame(data)
+        index = 0
+        values = df.values[index][4:].tolist()
+        labels = df.columns[4:].tolist()
+        title = df.values[index][:1][0]  
+        trace = go.Scatter(x=labels, y=values)
+        chart_data = [trace]
+
+        config_dict = json.loads(self.chart_configs)
+        del config_dict['use_plotly']
+        layout = go.Layout(title='My Plot', **config_dict)
+        fig = go.Figure(data=chart_data, layout=layout)
+        plot_div = plotly.offline.plot(fig, output_type='div')
+        return plot_div
+        # svg_image = pio.to_svg(fig)
+        # return svg_image
