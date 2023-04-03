@@ -85,7 +85,7 @@ def create_app(config_class=Config):
         modify = Visual.from_dict(data)
         if not selected is None :
             modify = get_chart_by_chart_id(charts, int(selected))
-        print(modify)
+        # print(modify)
         return render_template('charts.html', data=charts, modify=modify)
 
     @app.route("/charts-management", methods=['POST'])
