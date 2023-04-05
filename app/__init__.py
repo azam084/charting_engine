@@ -80,7 +80,8 @@ def create_app(config_class=Config):
                 'chart_url_name': 'bar_chart',
                 'chart_styles': '{"background":"transparent"}',
                 'chart_configs': '{"title": "My Bar Chart"}',
-                'chart_data_source': '{"datasource":"url"}'
+                'chart_data_source': '{"datasource":"url"}',
+                'custom_css':''
             }
         modify = Visual.from_dict(data)
         if not selected is None :
@@ -96,7 +97,8 @@ def create_app(config_class=Config):
                 'chart_url_name': request.form['chart_url_name'],
                 'chart_styles': request.form['chart_styles'],
                 'chart_configs': request.form['chart_configs'],
-                'chart_data_source': request.form['chart_data_source']
+                'chart_data_source': request.form['chart_data_source'],
+                'custom_css': request.form['custom_css']
             }
          
         visual = Visual.from_dict(data)

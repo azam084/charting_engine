@@ -19,15 +19,17 @@ class Visual:
             data_dict['chart_url_name'],
             data_dict['chart_styles'],
             data_dict['chart_configs'],
-            data_dict['chart_data_source']
+            data_dict['chart_data_source'],
+            data_dict['custom_css']
         )
-    def __init__(self, chart_id, chart_name, chart_url_name, chart_styles, chart_configs, chart_data_source):
+    def __init__(self, chart_id, chart_name, chart_url_name, chart_styles, chart_configs, chart_data_source, custom_css):
         self.chart_id = chart_id
         self.chart_name = chart_name
         self.chart_url_name = chart_url_name
         self.chart_styles = chart_styles
         self.chart_configs = chart_configs
         self.chart_data_source = chart_data_source
+        self.custom_css = custom_css
     @classmethod
     def get_style(self,chartstyle):
         style_dict = json.loads(chartstyle)
@@ -45,7 +47,8 @@ class Visual:
             row[2],
             row[3],
             row[4],
-            row[5])
+            row[5],
+            row[6])
 
     def get_data(self, args, token):
         _datasource = json.loads(self.chart_data_source)
@@ -86,6 +89,7 @@ class Visual:
             bar_chart  = pygal.StackedLine(fill=True)
         bar_chart.style = chart_style 
         bar_chart.config = chart_config
+        bar_chart.config.css.append(self.custom_css)
         # bar_chart.show_legend  = False 
         # bar_chart.pretty_print = True
         # #bar_chart.human_readable = True
