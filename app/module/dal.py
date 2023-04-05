@@ -16,7 +16,7 @@ class Dal :
         c = conn.cursor()
 
         if not visual.chart_id or int(visual.chart_id) == 0:
-            c.execute("INSERT INTO ChartConfigs (chart_name, chart_url_name, chart_styles, chart_configs, chart_data_source, custom_css) VALUES (?, ?, ?, ?, ?)",
+            c.execute("INSERT INTO ChartConfigs (chart_name, chart_url_name, chart_styles, chart_configs, chart_data_source, custom_css) VALUES (?, ?, ?, ?, ?, ?)",
                         (visual.chart_name, visual.chart_url_name, visual.chart_styles, visual.chart_configs, visual.chart_data_source, visual.custom_css))
         else:
             c.execute("UPDATE ChartConfigs SET chart_name = ?, chart_url_name = ?, chart_styles = ?, chart_configs = ?, chart_data_source = ?, custom_css = ? WHERE chart_id = ?",
