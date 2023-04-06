@@ -42,7 +42,8 @@ def create_app(config_class=Config):
             return 'Visual not yet supported !!!'
         
         charttype = request.args.get('ct')
-        
+        title = request.args.get('title')
+
         token = app.config['DATA_API_TOKEN'] 
 
         config_dict = json.loads(visual.chart_configs)
@@ -50,6 +51,7 @@ def create_app(config_class=Config):
         use_plotly = config_dict.get('use_plotly')
         if use_plotly is None:
             chart_pygal = visual.get_chart(request.args, token, charttype) 
+            chart_pygal.config.title = title
             response  = chart_pygal.render_response()
         else:
             chart_plotly = visual.get_chart_plotly(request.args, token, charttype)
