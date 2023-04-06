@@ -5,10 +5,12 @@ import pandas as pd
 from app.config import Config as config
 import pygal
 from pygal.style import Style
-
+import math
 import plotly
 import plotly.graph_objs as go
 import plotly.io as pio
+
+from app.module.LineBar import LineBar
 
 class Visual:
     @classmethod
@@ -71,37 +73,70 @@ class Visual:
 
     def get_chart(self, args, token, charttype):
         data  = self.get_data(args, token)
+                
         df = pd.DataFrame(data)
-        index = 0
-        values = df.values[index][4:].tolist()
-        labels = df.columns[4:].tolist()
-        title = df.values[index][:1][0]  
-        chart_style = self.get_style(self.chart_styles)  
+       
+        fixed_cols = ["EntityID", "EntityName", "Labels", "ForYear", "FiscalPeriodValue", "ForDate"]
+        variable_cols = list(set(df.columns) - set(fixed_cols))
 
+        
+        labels = df['Labels']
+
+        chart_style = self.get_style(self.chart_styles)  
+        
         
         config_dict = json.loads(self.chart_configs)
         chart_config = pygal.Config(**config_dict) 
- 
+        
+        entities =  df['EntityID'].unique() 
+        entities_names = df['EntityName'].unique()
         bar_chart = pygal.Bar()
         if (charttype == 'line'):
             bar_chart = pygal.Line(x_labels_major_count = 6)
         if (charttype == 'stackedline'):
             bar_chart  = pygal.StackedLine(fill=True)
-        bar_chart.style = chart_style 
+        if (charttype == 'pie'):
+            bar_chart  = pygal.Pie()
+        
+        
         bar_chart.config = chart_config
+
+        if entities.shape[0] > 1: 
+            bar_chart  = LineBar(chart_config)
+
+        bar_chart.style = chart_style 
+        #bar_chart.config = chart_config
         bar_chart.config.css.append(self.custom_css)
-        # bar_chart.show_legend  = False 
-        # bar_chart.pretty_print = True
-        # #bar_chart.human_readable = True
-        # #bar_chart.title = title
-        #bar_chart.truncate_label  = None
-        bar_chart.x_labels = map(str, labels) 
-        # bar_chart.x_labels_major_count = 6 
-        bar_chart.add(title, values) 
-        # bar_chart.x_labels_major_count = 6 
-        # bar_chart.x_labels_major_every = 4
-        # bar_chart.truncate_label = -1
-        # bar_chart.show_minor_x_labels = False
+    
+        bar_chart.x_labels =  list(map(str, labels.unique()) )
+        
+        bar_max_value = 0
+        bar_min_value = -20000000
+        for col in variable_cols:
+            values =  df.loc[df['EntityID'] == entities[0], col]
+            title =  entities_names[0] + '-' + col if len(entities_names) > 1 else col
+            bar_chart.add(title, values,plotas='bar')  
+            bar_max_value = values.max() if bar_max_value < values.max() else bar_max_value
+            bar_min_value = values.min() if bar_min_value < values.min() else bar_min_value
+
+        if entities.shape[0] > 1:
+            line_max_value = 0
+            line_min_value = -20000000
+            bar_chart.x_labels.append("")  # without this the final bars overlap the secondary axis
+            for index, entity in enumerate(entities[1:]):
+                for col in variable_cols:
+                    values =  df.loc[df['EntityID'] == entity, col]
+                    title = entities_names[index] + '-' + col
+                    bar_chart.add(title, values,  plotas='line', secondary=True)   
+                    line_max_value = values.max() if line_max_value < values.max() else line_max_value
+                    line_min_value = values.min() if line_min_value < values.min() else line_min_value
+
+            bar_chart.secondary_range = (-1.5,line_max_value) 
+
+        bar_min_value = math.floor(bar_min_value)
+        bar_min_value = (bar_min_value if bar_min_value < 0 else 0)
+        print(math.floor(bar_min_value))
+        bar_chart.range = (-1.2 , math.ceil(bar_max_value)) 
         return bar_chart
 
     def get_chart_plotly(self, args, token, charttype):
