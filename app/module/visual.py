@@ -11,6 +11,7 @@ import plotly.graph_objs as go
 import plotly.io as pio
 
 from app.module.LineBar import LineBar
+from app.module.ArgaamBar import ArgaamBar
 
 class Visual:
     @classmethod
@@ -90,7 +91,7 @@ class Visual:
         
         entities =  df['EntityID'].unique() 
         entities_names = df['EntityName'].unique()
-        bar_chart = pygal.Bar()
+        bar_chart = ArgaamBar()
         if (charttype == 'line'):
             bar_chart = pygal.Line(x_labels_major_count = 6)
         if (charttype == 'stackedline'):
