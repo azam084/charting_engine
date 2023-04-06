@@ -105,7 +105,7 @@ class Visual:
             bar_chart  = LineBar(chart_config)
 
         bar_chart.style = chart_style 
-        #bar_chart.config = chart_config
+        bar_chart.config = chart_config
         bar_chart.config.css.append(self.custom_css)
     
         bar_chart.x_labels =  list(map(str, labels.unique()) )
@@ -126,17 +126,18 @@ class Visual:
             for index, entity in enumerate(entities[1:]):
                 for col in variable_cols:
                     values =  df.loc[df['EntityID'] == entity, col]
-                    title = entities_names[index] + '-' + col
+                    title = entities_names[index+1] + '-' + col
                     bar_chart.add(title, values,  plotas='line', secondary=True)   
                     line_max_value = values.max() if line_max_value < values.max() else line_max_value
                     line_min_value = values.min() if line_min_value < values.min() else line_min_value
 
-            bar_chart.secondary_range = (-1.5,line_max_value) 
+            bar_chart.secondary_range = (-0.003,line_max_value) 
 
-        bar_min_value = math.floor(bar_min_value)
-        bar_min_value = (bar_min_value if bar_min_value < 0 else 0)
-        print(math.floor(bar_min_value))
-        bar_chart.range = (-1.2 , math.ceil(bar_max_value)) 
+            # bar_min_value = math.floor(bar_min_value)
+            # bar_min_value = (bar_min_value if bar_min_value < 0 else 0)
+            # print(math.floor(bar_min_value))
+            bar_chart.range = (-1.002, math.ceil(bar_max_value)) 
+
         return bar_chart
 
     def get_chart_plotly(self, args, token, charttype):
