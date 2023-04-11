@@ -74,19 +74,20 @@ class Visual:
 
     def get_chart(self, args, token, charttype):
         try:
-            data = self.get_data(args, token) 
-            df = pd.DataFrame(data) 
-        except: 
-            df = pd.DataFrame(columns=["EntityID", "EntityName", "Labels", "ForYear", "FiscalPeriodValue", "ForDate"])
+            data = self.get_data(args, token)
+            df = pd.DataFrame(data)
+        except:
+           df = pd.DataFrame(columns=["EntityID", "EntityName", "Labels", "ForYear", "FiscalPeriodValue", "ForDate"])
 
-        if df.empty: 
+        if df.empty:
             df = pd.DataFrame(columns=["EntityID", "EntityName", "Labels", "ForYear", "FiscalPeriodValue", "ForDate"])
-         
-        # df = pd.DataFrame(data)
+       
+       
         fixed_cols = ["EntityID", "EntityName", "Labels", "ForYear", "FiscalPeriodValue", "ForDate"]
         variable_cols = list(set(df.columns) - set(fixed_cols))
- 
-        labels = df['Labels']
+
+        
+        labels = df['Labels'] 
 
         chart_style = self.get_style(self.chart_styles)  
         
