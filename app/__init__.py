@@ -50,7 +50,7 @@ def create_app(config_class=Config):
         response = Response('', status=200, mimetype='text/plain')
         use_plotly = config_dict.get('use_plotly')
         if use_plotly is None:
-            chart_pygal = visual.get_chart(request.args, token, charttype) 
+            chart_pygal = visual.get_pie_chart(request.args, token, charttype) if charttype == 'pie' else visual.get_chart(request.args, token, charttype)
             chart_pygal.config.title = title
             response  = chart_pygal.render_response()
         else:
