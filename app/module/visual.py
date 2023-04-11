@@ -73,27 +73,29 @@ class Visual:
         return data 
 
     def get_chart(self, args, token, charttype):
-        data  = self.get_data(args, token)
-                
-        df = pd.DataFrame(data)
-       
+        try:
+            data = self.get_data(args, token) 
+            df = pd.DataFrame(data) 
+        except: 
+            df = pd.DataFrame(columns=["EntityID", "EntityName", "Labels", "ForYear", "FiscalPeriodValue", "ForDate"])
+
+        if df.empty: 
+            df = pd.DataFrame(columns=["EntityID", "EntityName", "Labels", "ForYear", "FiscalPeriodValue", "ForDate"])
+         
+        # df = pd.DataFrame(data)
         fixed_cols = ["EntityID", "EntityName", "Labels", "ForYear", "FiscalPeriodValue", "ForDate"]
         variable_cols = list(set(df.columns) - set(fixed_cols))
-
-        
-        labels = df['Labels'] if 'Labels' in df.columns else ''
+ 
+        labels = df['Labels']
 
         chart_style = self.get_style(self.chart_styles)  
         
         
         config_dict = json.loads(self.chart_configs)
         chart_config = pygal.Config(**config_dict) 
-        entities = df['EntityID'].unique() if 'EntityID' in df.columns and df['EntityID'].nunique() > 0 else []
-
-        #entities =  df['EntityID'].unique()
-        entities_names = df['EntityName'].unique() if 'EntityName' in df.columns and df['EntityName'].nunique() > 0 else []
-
-        #entities_names = df['EntityName'].unique()
+        
+        entities =  df['EntityID'].unique() 
+        entities_names = df['EntityName'].unique()
         bar_chart = ArgaamBar()
         if (charttype == 'line'):
             bar_chart = pygal.Line(x_labels_major_count = 6)
@@ -105,14 +107,14 @@ class Visual:
         
         bar_chart.config = chart_config
 
-        if len(entities) > 0 and entities.shape[0] > 1: 
+        if entities.shape[0] > 1: 
             bar_chart  = LineBar(chart_config)
 
         bar_chart.style = chart_style 
         bar_chart.config = chart_config
         bar_chart.config.css.append(self.custom_css)
     
-        bar_chart.x_labels =  list(map(str, labels.unique()) ) if len(labels) > 0 else ''
+        bar_chart.x_labels =  list(map(str, labels.unique()) )
         
         bar_max_value = 0
         bar_min_value = -20000000
@@ -123,7 +125,7 @@ class Visual:
             bar_max_value = values.max() if bar_max_value < values.max() else bar_max_value
             bar_min_value = values.min() if bar_min_value < values.min() else bar_min_value
 
-        if len(entities) > 0 and entities.shape[0] > 1:
+        if entities.shape[0] > 1:
             line_max_value = 0
             line_min_value = -20000000
             bar_chart.x_labels.append("")  # without this the final bars overlap the secondary axis
@@ -162,3 +164,5 @@ class Visual:
         return plot_div
         # svg_image = pio.to_svg(fig)
         # return svg_image
+
+     
