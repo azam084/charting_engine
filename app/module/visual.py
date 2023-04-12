@@ -172,10 +172,10 @@ class Visual:
             data = self.get_data(args, token) 
             df = pd.DataFrame(data) 
         except: 
-            df = pd.DataFrame(columns=["EntityID", "EntityName", "Labels", "ForYear", "FiscalPeriodValue", "ForDate"])
+            df = pd.DataFrame(columns=["EntityID", "EntityName", "Labels", "ForYear", "FiscalPeriodValue", "ForDate", "Percentage"])
 
         if df.empty: 
-            df = pd.DataFrame(columns=["EntityID", "EntityName", "Labels", "ForYear", "FiscalPeriodValue", "ForDate"])
+            df = pd.DataFrame(columns=["EntityID", "EntityName", "Labels", "ForYear", "FiscalPeriodValue", "ForDate", "Percentage"])
          
         fixed_cols = ["EntityID", "EntityName", "Labels", "ForYear", "FiscalPeriodValue", "ForDate"]
         variable_cols = list(set(df.columns) - set(fixed_cols))
