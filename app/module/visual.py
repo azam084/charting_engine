@@ -87,13 +87,11 @@ class Visual:
         fixed_cols = ["EntityID", "EntityName", "Labels", "ForYear", "FiscalPeriodValue", "ForDate"]
         variable_cols = list(set(df.columns) - set(fixed_cols))
 
-        
-        labels = df['Labels'] 
-
         chart_style = self.get_style(self.chart_styles)  
         
         
         config_dict = json.loads(self.chart_configs)
+
         chart_config = pygal.Config(**config_dict) 
         
         entities =  df['EntityID'].unique() 
@@ -104,8 +102,7 @@ class Visual:
         if (charttype == 'stackedline'):
             bar_chart  = pygal.StackedLine(fill=True)
         if (charttype == 'pie'):
-            bar_chart  = pygal.Pie()
-        
+            bar_chart  = pygal.Pie()        
         
         bar_chart.config = chart_config
 
@@ -115,15 +112,21 @@ class Visual:
         bar_chart.style = chart_style 
         bar_chart.config = chart_config
         bar_chart.config.css.append(self.custom_css)
-    
-        bar_chart.x_labels =  list(map(str, labels.unique()) )
+
+        if charttype == "line" or charttype == "stackedline":
+            labels = df['ForDate']
+            dates = pd.to_datetime(labels)
+            bar_chart.x_labels =  dates.dt.strftime("%d-%b-%Y")
+        else:
+            labels = df['Labels']
+            bar_chart.x_labels =  list(map(str, labels.unique()) )
         
         bar_max_value = 0
         bar_min_value = -20000000
         for col in variable_cols:
-            values =  df.loc[df['EntityID'] == entities[0], col]
+            values =  df.loc[df['EntityID'] == entities[0], col].round(2)
             title =  entities_names[0] + '-' + col if len(entities_names) > 1 else col
-            bar_chart.add(title, values,plotas='bar')  
+            bar_chart.add(" ", values, plotas='bar')  
             bar_max_value = values.max() if bar_max_value < values.max() else bar_max_value
             bar_min_value = values.min() if bar_min_value < values.min() else bar_min_value
 
@@ -133,7 +136,7 @@ class Visual:
             bar_chart.x_labels.append("")  # without this the final bars overlap the secondary axis
             for index, entity in enumerate(entities[1:]):
                 for col in variable_cols:
-                    values =  df.loc[df['EntityID'] == entity, col]
+                    values =  df.loc[df['EntityID'] == entity, col].round(2)
                     title = entities_names[index+1] + '-' + col
                     bar_chart.add(title, values,  plotas='line', secondary=True)   
                     line_max_value = values.max() if line_max_value < values.max() else line_max_value
@@ -178,6 +181,7 @@ class Visual:
             df = pd.DataFrame(columns=["EntityID", "EntityName", "Labels", "ForYear", "FiscalPeriodValue", "ForDate", "Percentage"])
          
         fixed_cols = ["EntityID", "EntityName", "Labels", "ForYear", "FiscalPeriodValue", "ForDate"]
+
         variable_cols = list(set(df.columns) - set(fixed_cols))
 
         
