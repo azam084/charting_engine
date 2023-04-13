@@ -193,14 +193,14 @@ class Visual:
         
         
         config_dict = json.loads(self.chart_configs)
-        chart_config = pygal.Config(**config_dict) 
+        chart_config = pygal.Config(**config_dict)
         
         entities =  df['EntityID'].unique() 
         entities_names = df['EntityName'].unique()
         pie_chart = pygal.Pie()
               
         
-       #pie_chart.config = chart_config
+        pie_chart.config = chart_config
 
 
 
