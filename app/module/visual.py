@@ -1,4 +1,5 @@
  
+import datetime
 from flask import request
 import requests
 import json
@@ -101,6 +102,8 @@ class Visual:
             bar_chart = pygal.Line(x_labels_major_count = 6)
         if (charttype == 'stackedline'):
             bar_chart  = pygal.StackedLine(fill=True)
+        if (charttype == 'dateline'):
+            bar_chart  = pygal.DateLine()
         if (charttype == 'pie'):
             bar_chart  = pygal.Pie()        
         
@@ -113,22 +116,50 @@ class Visual:
         bar_chart.config = chart_config
         bar_chart.config.css.append(self.custom_css)
 
-        if charttype == "line" or charttype == "stackedline":
-            labels = df['ForDate']
-            dates = pd.to_datetime(labels)
-            bar_chart.x_labels =  dates.dt.strftime("%d-%b-%Y")
+        if charttype == "line" or charttype == "stackedline" or charttype == "dateline":
+            bar_chart.x_labels = list([int(df.loc[i]["ForYear"]) if i % 240 == 0 else '' for i in range(df.shape[0])])
+            bar_chart.config.x_labels_major_count = 4
+            bar_chart.config.x_labels_major_every = 240
         else:
             labels = df['Labels']
-            bar_chart.x_labels =  list(map(str, labels.unique()) )
+            bar_chart.x_labels =  list(map(str, labels.unique()))
+            data_length = len(df["ForDate"])
+            x_labels_major_count = 0
+            if data_length == 4:
+                x_labels_major_count = 4
+            elif data_length > 4 & data_length < 8:
+                x_labels_major_count = int(data_length / 2)
+            else:
+                x_labels_major_count = 5
+            bar_chart.config.x_labels_major_count = x_labels_major_count
         
         bar_max_value = 0
         bar_min_value = -20000000
+
+        if charttype == 'stackedline':
+            bar_chart.config.defs.append('''
+            <linearGradient id="gradient-0" x1="0" x2="0" y1="0" y2="1">
+                <stop offset="0%" stop-color="#EE7420" />
+                <stop offset="100%" stop-color="white" />
+            </linearGradient>
+            ''')
+            bar_chart.config.css.append('''inline:
+            .color-0 {
+                fill: url(#gradient-0) !important;
+                stroke: url(#gradient-0) !important;
+            }''')
+            
+        
         for col in variable_cols:
-            values =  df.loc[df['EntityID'] == entities[0], col].round(2)
-            title =  entities_names[0] + '-' + col if len(entities_names) > 1 else col
-            bar_chart.add(" ", values, plotas='bar')  
-            bar_max_value = values.max() if bar_max_value < values.max() else bar_max_value
-            bar_min_value = values.min() if bar_min_value < values.min() else bar_min_value
+            if charttype == 'stackedline':
+                values = df[[col, 'ForDate']].rename(columns={'CloseValue': 'value', 'ForDate': 'label'}).to_dict(orient='records')
+                bar_chart.add('', values)
+            else:
+                values =  df.loc[df['EntityID'] == entities[0], col].round(2)
+                title =  entities_names[0] + '-' + col if len(entities_names) > 1 else col
+                bar_chart.add(" ", values)  
+                bar_max_value = values.max() if bar_max_value < values.max() else bar_max_value
+                bar_min_value = values.min() if bar_min_value < values.min() else bar_min_value
 
         if entities.shape[0] > 1:
             line_max_value = 0
