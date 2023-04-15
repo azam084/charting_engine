@@ -183,47 +183,26 @@ class Visual:
         fixed_cols = ["EntityID", "EntityName", "Labels", "ForYear", "FiscalPeriodValue", "ForDate"]
 
         variable_cols = list(set(df.columns) - set(fixed_cols))
-
         
         labels = df['Labels']
 
-        # PercentValues = df['Percentage']
-
-        chart_style = self.get_style(self.chart_styles)  
-        
+        chart_style = self.get_style(self.chart_styles)        
         
         config_dict = json.loads(self.chart_configs)
         chart_config = pygal.Config(**config_dict)
         
         entities =  df['EntityID'].unique() 
         entities_names = df['EntityName'].unique()
-        pie_chart = pygal.Pie()
-              
+        pie_chart = pygal.Pie()             
         
         pie_chart.config = chart_config
+        pie_chart.style = chart_style
+        pie_chart.config.css.append(self.custom_css)
 
-
-
-       # pie_chart.style = chart_style 
-       # pie_chart.config = chart_config
-       # pie_chart.config.css.append(self.custom_css)
-    
-        
-        # entities_names
-        # for col in variable_cols:
-        #     values =  df.loc[df['EntityID'] == entities[0], col]
-        #     title =  entities_names[0] + '-' + col if len(entities_names) > 1 else col
-        #     pie_chart.add(entities_names, values)  
-        #     print(entities_names[col])
-        #     bar_max_value = values.max() if bar_max_value < values.max() else bar_max_value
-        #     bar_min_value = values.min() if bar_min_value < values.min() else bar_min_value
         namesOfLabels=df['Labels']
         valuesForLabels=df['Percentage'] 
          
         for i in range (len(namesOfLabels)):
             pie_chart.add(namesOfLabels[i],valuesForLabels[i])
-        
-
-        # pie_chart.add('hello',258)
 
         return pie_chart
