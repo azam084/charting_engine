@@ -132,7 +132,7 @@ class Visual:
         bar_max_value = 0
         bar_min_value = -20000000
 
-        if charttype == 'stackedline':
+        if charttype == 'bar':
             bar_chart.config.defs.append('''
             <linearGradient id="gradient-0" x1="0" x2="0" y1="0" y2="1">
                 <stop offset="0%" stop-color="#F08823" />
