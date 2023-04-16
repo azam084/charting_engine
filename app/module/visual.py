@@ -54,7 +54,7 @@ class Visual:
             row[4],
             row[5],
             row[6])
-
+    
     def get_data(self, args, token):
         _datasource = json.loads(self.chart_data_source)
        
@@ -100,12 +100,12 @@ class Visual:
         bar_chart = ArgaamBar()
         if (charttype == 'line'):
             bar_chart = pygal.Line()
-        if (charttype == 'stackedline'):
-            bar_chart  = pygal.StackedLine(fill=True)
+        # if (charttype == 'stackedline'):
+        #     bar_chart  = pygal.StackedLine()
         if (charttype == 'dateline'):
             bar_chart  = pygal.DateLine()
         if (charttype == 'pie'):
-            bar_chart  = pygal.Pie()        
+            bar_chart  = pygal.Pie()     
         
         bar_chart.config = chart_config
 
@@ -130,11 +130,14 @@ class Visual:
         bar_max_value = 0
         bar_min_value = -20000000
 
-        if charttype == 'stackedline':
+        if charttype == 'bar':
             bar_chart.config.defs.append('''
             <linearGradient id="gradient-0" x1="0" x2="0" y1="0" y2="1">
-                <stop offset="0%" stop-color="#EE7420" />
-                <stop offset="100%" stop-color="white" />
+                <stop offset="0%" stop-color="#F08823" />
+                <stop offset="40%" stop-color="#FFB347" />
+                <stop offset="60%" stop-color="#FFE4C4" />
+                <stop offset="80%" stop-color="#FFFFFF" />
+                <stop offset="100%" stop-color="#FFFFFF" />
             </linearGradient>
             ''')
             bar_chart.config.css.append('''inline:
@@ -180,7 +183,7 @@ class Visual:
             # bar_min_value = (bar_min_value if bar_min_value < 0 else 0)
             # print(math.floor(bar_min_value))
             bar_chart.range = (-1.002, math.ceil(bar_max_value)) 
-
+        
         return bar_chart
 
     def get_chart_plotly(self, args, token, charttype):
