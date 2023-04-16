@@ -117,7 +117,9 @@ class Visual:
         bar_chart.config.css.append(self.custom_css)
         data_length = len(df["ForDate"])
         if charttype == "line" or charttype == "stackedline":
-            bar_chart.x_labels = list([int(df.loc[i]["ForYear"]) if i % 240 == 0 else '' for i in range(df.shape[0])])
+            data_count = len(df["ForYear"])
+            data_count = 240 if data_count < 1500 else 480
+            bar_chart.x_labels = list([int(df.loc[i]["ForYear"]) if i % data_count == 0 else '' for i in range(df.shape[0])])
             bar_chart.config.x_labels_major_count = 4
             bar_chart.config.x_labels_major_every = 240
         else:
@@ -130,7 +132,7 @@ class Visual:
         bar_max_value = 0
         bar_min_value = -20000000
 
-        if charttype == 'bar':
+        if charttype == 'stackedline':
             bar_chart.config.defs.append('''
             <linearGradient id="gradient-0" x1="0" x2="0" y1="0" y2="1">
                 <stop offset="0%" stop-color="#F08823" />
