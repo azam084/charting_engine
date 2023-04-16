@@ -60,11 +60,11 @@ class Visual:
        
         arguments = str(_datasource['arguments']).split(',')
         _apiurl = str(_datasource["url"])
-        print(_apiurl)
+        
         for arg in arguments:
             _apiurl = _apiurl.replace(arg, args.get(arg))
         _apiurl = _apiurl.replace('{','').replace('}','')
-        print(_apiurl)
+        
         try:
             uResponse = requests.get(_apiurl, headers={'Authorization': f'Bearer {token}'}) 
         except requests.exceptions.RequestException as e: 
@@ -99,7 +99,7 @@ class Visual:
         entities_names = df['EntityName'].unique()
         bar_chart = ArgaamBar()
         if (charttype == 'line'):
-            bar_chart = pygal.Line(x_labels_major_count = 6)
+            bar_chart = pygal.Line()
         if (charttype == 'stackedline'):
             bar_chart  = pygal.StackedLine(fill=True)
         if (charttype == 'dateline'):
@@ -115,23 +115,17 @@ class Visual:
         bar_chart.style = chart_style 
         bar_chart.config = chart_config
         bar_chart.config.css.append(self.custom_css)
-
-        if charttype == "line" or charttype == "stackedline" or charttype == "dateline":
+        data_length = len(df["ForDate"])
+        if charttype == "line" or charttype == "stackedline":
             bar_chart.x_labels = list([int(df.loc[i]["ForYear"]) if i % 240 == 0 else '' for i in range(df.shape[0])])
             bar_chart.config.x_labels_major_count = 4
             bar_chart.config.x_labels_major_every = 240
         else:
             labels = df['Labels']
-            bar_chart.x_labels =  list(map(str, labels.unique()))
-            data_length = len(df["ForDate"])
-            x_labels_major_count = 0
-            if data_length == 4:
-                x_labels_major_count = 4
-            elif data_length > 4 & data_length < 8:
-                x_labels_major_count = int(data_length / 2)
-            else:
-                x_labels_major_count = 5
-            bar_chart.config.x_labels_major_count = x_labels_major_count
+            bar_chart.x_labels =  list(map(str, labels.unique()))            
+            bar_chart.x_labels = list([str(df.loc[i]["Labels"]) if i % int(data_length / 4) == 0 else '' for i in range(df.shape[0])])            
+            bar_chart.config.x_labels_major_count = 4
+            bar_chart.config.x_labels_major_every = data_length
         
         bar_max_value = 0
         bar_min_value = -20000000
@@ -148,18 +142,25 @@ class Visual:
                 fill: url(#gradient-0) !important;
                 stroke: url(#gradient-0) !important;
             }''')
-            
         
         for col in variable_cols:
-            if charttype == 'stackedline':
-                values = df[[col, 'ForDate']].rename(columns={'CloseValue': 'value', 'ForDate': 'label'}).to_dict(orient='records')
+            if charttype == 'stackedline' or charttype == "line":
+                values = df[[col, 'ForDate']].rename(columns={col: 'value', 'ForDate': 'label'}).to_dict(orient='records')
+                for record in values:
+                    record['value'] = round(record['value'], 2)
                 bar_chart.add('', values)
             else:
-                values =  df.loc[df['EntityID'] == entities[0], col].round(2)
+                #values =  df.loc[df['EntityID'] == entities[0], col].round(2)
+                values = df[[col, 'Labels']].rename(columns={col: 'value', 'Labels': 'label'}).to_dict(orient='records')
                 title =  entities_names[0] + '-' + col if len(entities_names) > 1 else col
+                i = 0
+                for record in values:
+                    record['value'] = round(record['value'], 2)
+                    record['label'] = '' if i % int(data_length / 4) == 0 else record['label']
+                    i = i + 1
                 bar_chart.add(" ", values)  
-                bar_max_value = values.max() if bar_max_value < values.max() else bar_max_value
-                bar_min_value = values.min() if bar_min_value < values.min() else bar_min_value
+                # bar_max_value = values.max() if bar_max_value < values.max() else bar_max_value
+                # bar_min_value = values.min() if bar_min_value < values.min() else bar_min_value
 
         if entities.shape[0] > 1:
             line_max_value = 0
