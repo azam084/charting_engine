@@ -125,9 +125,9 @@ class Visual:
         else:
             labels = df['Labels']
             bar_chart.x_labels =  list(map(str, labels.unique()))
-            bar_chart.x_labels = list([str(df.loc[i]["Labels"]) if int(data_length / 4) != 0 and i % int(data_length / 4) == 0 else '' for i in range(df.shape[0])])            
+            bar_chart.x_labels = list([str(df.loc[i]["Labels"]) if data_length < 5 or i % int(data_length / 4) == 0 else '' for i in range(df.shape[0])])            
             bar_chart.config.x_labels_major_count = 4
-            bar_chart.config.x_labels_major_every = data_length
+            bar_chart.config.x_labels_major_every = 1 if data_length < 5 else data_length 
         
         bar_max_value = 0
         bar_min_value = -20000000
@@ -161,7 +161,7 @@ class Visual:
                 i = 0
                 for record in values:
                     record['value'] = round(record['value'], 2)
-                    record['label'] = '' if int(data_length / 4) and i % int(data_length / 4) == 0 else record['label']
+                    record['label'] = '' if int(data_length / 4) != 0 and i % int(data_length / 4) == 0 else record['label']
                     i = i + 1
                 bar_chart.add(" ", values)  
                 # bar_max_value = values.max() if bar_max_value < values.max() else bar_max_value
