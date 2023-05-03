@@ -77,6 +77,7 @@ class Visual:
     def get_chart(self, args, token, charttype):
         try:
             data = self.get_data(args, token)
+            # df = pd.DataFrame(data).fillna(value=None)
             df = pd.DataFrame(data)
         except:
            df = pd.DataFrame(columns=["EntityID", "EntityName", "Labels", "ForYear", "FiscalPeriodValue", "ForDate"])
@@ -87,7 +88,9 @@ class Visual:
        
         fixed_cols = ["EntityID", "EntityName", "Labels", "ForYear", "FiscalPeriodValue", "ForDate"]
         variable_cols = list(set(df.columns) - set(fixed_cols))
+        # df.to_csv('A.csv')
 
+        
         chart_style = self.get_style(self.chart_styles)  
         
         
@@ -155,41 +158,51 @@ class Visual:
                 stroke: url(#gradient-0) !important;
             }''')
         
-        for col in variable_cols:
-            if charttype == 'stackedline' or charttype == "line":
-                values = df[[col, 'ForDate']].rename(columns={col: 'value', 'ForDate': 'label'}).to_dict(orient='records')
-                for record in values:
-                    record['value'] = round(record['value'], 2)
-                bar_chart.add('', values)
-            else:
-                #values =  df.loc[df['EntityID'] == entities[0], col].round(2)
-                df_filtered = df.loc[df['EntityID'] == entities[0], [col, 'Labels']]
-                values = df_filtered.rename(columns={col: 'value', 'Labels': 'label'}).to_dict(orient='records')
-                title =  entities_names[0] + '-' + col if len(entities_names) > 1 else col
-                i = 0
-                for record in values:
-                    record['value'] = round(record['value'], 2)
-                    record['label'] = '' if int(data_length / 4) != 0 and i % int(data_length / 4) == 0 else record['label']
-                    i = i + 1
-                bar_chart.add(title, values)  
-                # bar_max_value = values.max() if bar_max_value < values.max() else bar_max_value
-                # bar_min_value = values.min() if bar_min_value < values.min() else bar_min_value
+        for en_index, entity in enumerate(entities):
+            for col in variable_cols:
+                if charttype == 'stackedline' or charttype == "line":
+                    values = df[[col, 'ForDate']].rename(columns={col: 'value', 'ForDate': 'label'}).to_dict(orient='records')
+                    for record in values:
+                        record['value'] = round(record['value'], 2)
+                    bar_chart.add('', values)
+                else:
+                    #values =  df.loc[df['EntityID'] == entities[0], col].round(2)
+                    #replace null with none
+                    df_filtered = df.loc[df['EntityID'] == entity, [col, 'Labels']]
+                    values = df_filtered.rename(columns={col: 'value', 'Labels': 'label'}).to_dict(orient='records')
+                    title =  entities_names[en_index] + '-' + col if len(entities_names) > 1 else col
+                    i = 0
+                    for record in values:
+                        # record['value'] = round(record['value'], 2)
+                        record['value'] = record['value']
+                        # record['value'] = pd.DataFrame(record['value']).fillna(value=1)
+                        record['label'] = '' if int(data_length / 4) != 0 and i % int(data_length / 4) == 0 else record['label']
+                        i = i + 1
+                    bar_chart.add(title, values)  
+                    # bar_max_value = values.max() if bar_max_value < values.max() else bar_max_value
+                    # bar_min_value = values.min() if bar_min_value < values.min() else bar_min_value
+
 
         # barValuesTop={
         # 'print_values':False,
         # }
         # # bar_chart = pygal.Bar(**barValuesTop)
 
-        if entities.shape[0] > 1:
+        # entities=entities.dropna()
+
+
+        if entities.shape[0] > 1000:
 
             
             line_max_value = 0
             line_min_value = -20000000
             bar_chart.x_labels.append("")  # without this the final bars overlap the secondary axis)
             for index, entity in enumerate(entities[1:]):
+
                 for col in variable_cols:
 
-                    values =  df.loc[df['EntityID'] == entity, col].round(2)
+                    # values =  df.loc[df['EntityID'] == entity, col].round(2)
+                    values =  df.loc[df['EntityID'] == entity, col]
                     title = entities_names[index+1] + '-' + col
                     bar_chart.add(title, values,  plotas='line', secondary=True)   
                     line_max_value = values.max() if line_max_value < values.max() else line_max_value
