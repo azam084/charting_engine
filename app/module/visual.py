@@ -107,11 +107,18 @@ class Visual:
         if (charttype == 'pie'):
             bar_chart  = pygal.Pie()     
         
-        bar_chart.config = chart_config
+        # bar_chart.config = chart_config
+        # barValuesTop={
+        # 'print_values':False,
+        # 'width': 800,
+        # 'height': 600,
+
+        # }
+        # bar_chart = pygal.Bar(**barValuesTop)
 
         if entities.shape[0] > 1: 
+            # bar_chart  = LineBar(chart_config,**barValuesTop)
             bar_chart  = LineBar(chart_config)
-
         bar_chart.style = chart_style 
         bar_chart.config = chart_config
         bar_chart.config.css.append(self.custom_css)
@@ -156,35 +163,44 @@ class Visual:
                 bar_chart.add('', values)
             else:
                 #values =  df.loc[df['EntityID'] == entities[0], col].round(2)
-                values = df[[col, 'Labels']].rename(columns={col: 'value', 'Labels': 'label'}).to_dict(orient='records')
+                df_filtered = df.loc[df['EntityID'] == entities[0], [col, 'Labels']]
+                values = df_filtered.rename(columns={col: 'value', 'Labels': 'label'}).to_dict(orient='records')
                 title =  entities_names[0] + '-' + col if len(entities_names) > 1 else col
                 i = 0
                 for record in values:
                     record['value'] = round(record['value'], 2)
                     record['label'] = '' if int(data_length / 4) != 0 and i % int(data_length / 4) == 0 else record['label']
                     i = i + 1
-                bar_chart.add(" ", values)  
+                bar_chart.add(title, values)  
                 # bar_max_value = values.max() if bar_max_value < values.max() else bar_max_value
                 # bar_min_value = values.min() if bar_min_value < values.min() else bar_min_value
 
+        # barValuesTop={
+        # 'print_values':False,
+        # }
+        # # bar_chart = pygal.Bar(**barValuesTop)
+
         if entities.shape[0] > 1:
+
+            
             line_max_value = 0
             line_min_value = -20000000
-            bar_chart.x_labels.append("")  # without this the final bars overlap the secondary axis
+            bar_chart.x_labels.append("")  # without this the final bars overlap the secondary axis)
             for index, entity in enumerate(entities[1:]):
                 for col in variable_cols:
+
                     values =  df.loc[df['EntityID'] == entity, col].round(2)
                     title = entities_names[index+1] + '-' + col
                     bar_chart.add(title, values,  plotas='line', secondary=True)   
                     line_max_value = values.max() if line_max_value < values.max() else line_max_value
                     line_min_value = values.min() if line_min_value < values.min() else line_min_value
 
-            bar_chart.secondary_range = (-0.003,line_max_value) 
+           # bar_chart.secondary_range = (line_min_value,line_max_value) 
 
             # bar_min_value = math.floor(bar_min_value)
             # bar_min_value = (bar_min_value if bar_min_value < 0 else 0)
             # print(math.floor(bar_min_value))
-            bar_chart.range = (-1.002, math.ceil(bar_max_value)) 
+           # bar_chart.range = (-1.002, math.ceil(bar_max_value)) 
         
         return bar_chart
 
