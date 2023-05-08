@@ -76,7 +76,7 @@ class Visual:
     def get_chart(self, args, token, charttype):
         try:
             data = self.get_data(args, token)
-            df = pd.DataFrame(data)
+            df = pd.DataFrame(data)         
 
         except:
            df = pd.DataFrame(columns=["EntityID", "EntityName", "Labels", "ForYear", "FiscalPeriodValue", "ForDate"])
@@ -86,60 +86,76 @@ class Visual:
        
        
         fixed_cols = ["EntityID", "EntityName", "Labels", "ForYear", "FiscalPeriodValue", "ForDate"]
-        variable_cols = list(set(df.columns) - set(fixed_cols))      
-        fsType=request.args.get('fiscalperiodtype')
+        variable_cols = list(set(df.columns) - set(fixed_cols))
+        
+        fiscalperiodtype=request.args.get('fiscalperiodtype')
+
+        df=df.dropna(subset=variable_cols, how='any')
+
         
         def x_lbl_count(n):
             return (NumberOfBars // 2)+1 if NumberOfBars % 2 == 1 else (math.ceil(NumberOfBars / 2))
         
+
         NumberOfBars=df['Labels'].nunique()
+ 
 
         def calculateNumberOfMajors():
-            if fsType ==4:
+            if fiscalperiodtype ==4:
                 numberOfMajors=NumberOfBars if (NumberOfBars<13) else x_lbl_count(NumberOfBars/2) if (NumberOfBars>=13 and NumberOfBars<= 25) else 5  #display number of years 
                 return numberOfMajors
             else:
                 numberOfMajors=NumberOfBars if (NumberOfBars<8) else x_lbl_count(NumberOfBars) if (NumberOfBars>=8 and NumberOfBars<=13) else 5  #display number of qtrs 
                 return numberOfMajors                
 
+        
         chart_style = self.get_style(self.chart_styles)          
         config_dict = json.loads(self.chart_configs)
 
-        #needs to get improve we have to remove under properties and add them to init
+        #needs to get improve: we have to remove under properties and add them to init
         config_dict['precision'] = 2 if 'precision' not in config_dict else config_dict['precision']
         config_dict['max_scale'] = 11 if 'max_scale' not in config_dict else config_dict['max_scale']
         precesion_val='{{:.{}f}}'.format(config_dict['precision'])    
         config_dict['legend_at_bottom_columns']=3 if 'legend_at_bottom_columns' not in config_dict else config_dict['legend_at_bottom_columns']
         config_dict['width'] = 384 
         config_dict['height'] = 160
-        config_dict['margin'] = 12
+        config_dict['margin'] = 0
         config_dict['legend_at_bottom'] = True if 'legend_at_bottom' not in config_dict else config_dict['legend_at_bottom']
         config_dict['show_legend'] = False if 'show_legend' not in config_dict else config_dict['show_legend']
         config_dict['legend_box_size'] = 6 if 'legend_box_size' not in config_dict else config_dict['legend_box_size']
-        
+ 
 
-        entities =  df['EntityID'].unique() 
+        entities =  df['EntityID'].unique() # extract unique entities into an array
         entities_names = df['EntityName'].unique()
-
+        
         bar_chart = ArgaamBar()
-
         if entities.shape[0] > 1:
             config_dict['print_values']=False
+            
+            
+
 
         chart_config = pygal.Config(**config_dict) 
 
         if (charttype == 'line'):
+
             bar_chart = pygal.Line()
         # if (charttype == 'stackedline'):
         #     bar_chart  = pygal.StackedLine()
         if (charttype == 'dateline'):
+
             bar_chart  = pygal.DateLine()
         if (charttype == 'pie'):
+           
             bar_chart  = pygal.Pie()     
         
 
-        if entities.shape[0] > 1:           
+        if entities.shape[0] > 1:
+                       
             bar_chart  = pygal.Line(chart_config)
+
+
+           
 
         bar_chart.style = chart_style 
         bar_chart.config = chart_config
@@ -147,12 +163,24 @@ class Visual:
         print_values_every=math.ceil(NumberOfBars/8)
         css_selector = "[text-anchor='middle']:nth-of-type({}n)".format(print_values_every)
         css_code = "{} {{ display: initial !important; }}".format(css_selector)
-        if entities.shape[0]==1:
+
+        
+        
+        if entities.shape[0]==1:          
             bar_chart.config.css.append('''inline: 
             [text-anchor='middle']:nth-of-type(n) { display: none !Important;}
             ''')
             bar_chart.config.css.append("inline: {} {{ display: initial !important; }}".format(css_selector))
-        
+        # if entities.shape[0]==1 and fiscalperiodtype is not 4:
+        # else :
+            # print('dont print value at top of bar on qtrs')
+            # bar_chart.config.css.append('''inline: 
+            # [text-anchor='middle']:nth-of-type(n) { display: none !Important;}
+            # ''')
+
+
+       
+
         data_length = len(df["ForDate"]) 
         
         if charttype == "line" or charttype == "stackedline":
@@ -165,8 +193,12 @@ class Visual:
         else:
             labels = df['Labels']
             bar_chart.x_labels =  list(map(str, labels.unique()))
+            
             bar_chart.config.x_labels_major_count = calculateNumberOfMajors()
             
+            
+        bar_max_value = 0
+        bar_min_value = -20000000
 
         if charttype == 'bar':
             bar_chart.config.defs.append('''
@@ -184,30 +216,42 @@ class Visual:
                 stroke: url(#gradient-0) !important;
             }''')
             
+
+        bar_max_value=0
+        bar_min_value=0
+        valuesAry=[]
+        
         
         for en_index, entity in enumerate(entities):
+           
             for col in variable_cols:
                 if charttype == 'stackedline' or charttype == "line":
+                    
                     values = df[[col, 'ForDate']].rename(columns={col: 'value', 'ForDate': 'label'}).to_dict(orient='records')
-
+                    
                     for record in values:
+                        
                         record['value'] = round(record['value'], 2)
                     bar_chart.add('', values)
                 else:
-
+                    
                     df_filtered = df.loc[df['EntityID'] == entity, [col, 'Labels']]
                     values = df_filtered.rename(columns={col: 'value', 'Labels': 'label'}).to_dict(orient='records')
+
                     title =  entities_names[en_index] if len(entities_names) > 1 else col
-                    
                     if (len(entities)==1):
                         bar_chart.config.show_legend=False
                     else:
                         bar_chart.config.show_legend=True
+                        bar_chart.config.margin=12
                         num_rows_legend=math.ceil((len(entities))/bar_chart.config.legend_at_bottom_columns)
                         bar_chart.config.width = 384 +(120*num_rows_legend) 
                         bar_chart.config.height = 160+(50*num_rows_legend)
-                   
-                    bar_chart.add(title, values,formatter=lambda x: precesion_val.format(x) if x is not None else None)   
+                        
+                
+
+                    bar_chart.add(title, values,formatter=lambda x: precesion_val.format(x) if x is not None else None)  
+
         
         return bar_chart
 
@@ -266,5 +310,8 @@ class Visual:
             pie_chart.add(namesOfLabels[i],valuesForLabels[i])
 
         return pie_chart
+
+
+
 
 
