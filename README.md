@@ -99,7 +99,7 @@ pip install -r requirements.txt
 ### Database 
 The Database is located in the Database folder it is recommanded to place it in another folder or you can change the refrence in the config file.
 
-### Running the code updated
+### Running the code
 You can run the code after setting th database path in the config file.
 ```
 flask --app app --debug run
