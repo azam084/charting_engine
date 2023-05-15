@@ -1,7 +1,7 @@
 # Charting Engine
 Charting Engine is a Microservice, which will provide charts and other visuals as required.
 
-## Install
+## Installation
 
 To Install you will need Python 3.8 or above. We recommand to work with Ubuntu WSL2, which will make your work envoirnment very clear and your computer will perform better.
 
